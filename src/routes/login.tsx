@@ -14,7 +14,9 @@ function LoginPage() {
   const send = useServerFn(sendOtp);
   const verify = useServerFn(verifyOtp);
 
-  const [phone, setPhone] = useState("+91");
+  const [phone, setPhone] = useState("");
+  const normalizedPhone = phone.replace(/\D/g, "");
+  const displayPhone = normalizedPhone ? `+${normalizedPhone}` : "";
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const [loading, setLoading] = useState(false);
@@ -74,14 +76,15 @@ function LoginPage() {
               </label>
               <input
                 type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+919999999999"
-                className="w-full bg-input rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                inputMode="numeric"
+                value={displayPhone}
+                onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
+                placeholder="+91 99999 99999"
+                className="w-full bg-input rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring tracking-wide"
               />
               <button
                 onClick={onSendOtp}
-                disabled={loading}
+                disabled={loading || normalizedPhone.length < 8}
                 className="w-full bg-primary text-primary-foreground font-medium rounded-xl py-3 disabled:opacity-50 transition-opacity"
               >
                 {loading ? "Sending..." : "Send OTP via WhatsApp"}
@@ -90,7 +93,7 @@ function LoginPage() {
           ) : (
             <>
               <label className="block text-xs uppercase tracking-wider text-muted-foreground">
-                Enter OTP sent to {phone}
+                Enter OTP sent to {displayPhone}
               </label>
               <input
                 type="text"

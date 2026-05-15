@@ -2,10 +2,16 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
+// Normalize: strip everything non-digit, leading + optional, must be 8-15 digits
 const phoneSchema = z
   .string()
-  .trim()
-  .regex(/^\+\d{8,15}$/, "Phone must include country code, e.g. +919999999999");
+  .transform((s) => s.replace(/\D/g, ""))
+  .pipe(
+    z
+      .string()
+      .regex(/^\d{8,15}$/, "Enter a valid phone number with country code"),
+  )
+  .transform((digits) => `+${digits}`);
 
 export const sendOtp = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>

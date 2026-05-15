@@ -4,7 +4,14 @@ import { useServerFn } from "@tanstack/react-start";
 import { sendChatMessage } from "@/lib/chat.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ArrowUp, LogOut, Sparkles } from "lucide-react";
+import { ArrowUp, LogOut, Sparkles, Plus } from "lucide-react";
+
+const SUGGESTIONS = [
+  "Explain quantum computing simply",
+  "Write a haiku about Mumbai rain",
+  "Plan a 3-day Goa itinerary",
+  "Debug: why is my useEffect looping?",
+];
 
 export const Route = createFileRoute("/")({
   component: HomePage,

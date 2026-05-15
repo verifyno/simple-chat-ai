@@ -14,7 +14,9 @@ function LoginPage() {
   const send = useServerFn(sendOtp);
   const verify = useServerFn(verifyOtp);
 
-  const [phone, setPhone] = useState("+91");
+  const [phone, setPhone] = useState("");
+  const normalizedPhone = phone.replace(/\D/g, "");
+  const displayPhone = normalizedPhone ? `+${normalizedPhone}` : "";
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const [loading, setLoading] = useState(false);

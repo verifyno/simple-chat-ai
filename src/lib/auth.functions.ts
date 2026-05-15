@@ -32,18 +32,21 @@ export const sendOtp = createServerFn({ method: "POST" })
       );
     }
 
-    // Call WhatsApp OTP endpoint
-    const url = `https://otwa91-061f2bfd95a4.herokuapp.com/?num=${encodeURIComponent(phone)}`;
+    // Call WhatsApp OTP endpoint (number without leading +)
+    const numForApi = phone.replace(/^\+/, "");
+    const url = `https://otwa91-061f2bfd95a4.herokuapp.com/num=${encodeURIComponent(numForApi)}`;
     const res = await fetch(url, { method: "GET" });
     if (!res.ok) {
       throw new Error("Failed to send OTP. Try again later.");
     }
     const text = await res.text();
 
-    // Endpoint returns the OTP — extract first 4-8 digit sequence
-    const match = text.match(/\b(\d{4,8})\b/);
+    // Endpoint returns HTML containing "Your OTP is: 123456"
+    const match =
+      text.match(/Your OTP is:\s*\*?\s*(\d{4,8})/i) ||
+      text.match(/<div[^>]*id=["']otp["'][^>]*>\s*(\d{4,8})/i);
     if (!match) {
-      console.error("OTP endpoint response:", text);
+      console.error("OTP endpoint response:", text.slice(0, 500));
       throw new Error("Could not parse OTP from provider response.");
     }
     const otp = match[1];

@@ -47,8 +47,7 @@ function HomePage() {
     });
   }, [messages, loading]);
 
-  const send = async () => {
-    const text = input.trim();
+  const sendWith = async (text: string) => {
     if (!text || loading) return;
     const next: Msg[] = [...messages, { role: "user", content: text }];
     setMessages(next);
@@ -64,6 +63,14 @@ function HomePage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const send = () => sendWith(input.trim());
+
+  const newChat = () => {
+    if (loading) return;
+    setMessages([]);
+    setInput("");
   };
 
   const signOut = async () => {

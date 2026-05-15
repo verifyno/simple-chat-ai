@@ -81,10 +81,17 @@ function HomePage() {
     <div className="flex flex-col h-screen bg-background text-foreground">
       {/* iOS-style top bar */}
       <header className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-border/50 backdrop-blur-xl sticky top-0 z-10 bg-background/80">
-        <div>
-          <h1 className="text-lg font-semibold tracking-tight">mono</h1>
+        <button
+          onClick={newChat}
+          className="text-muted-foreground hover:text-foreground transition-colors p-2 -ml-2"
+          aria-label="New chat"
+        >
+          <Plus className="size-5" />
+        </button>
+        <div className="text-center">
+          <h1 className="text-[15px] font-semibold tracking-tight">mono</h1>
           {phone && (
-            <p className="text-[11px] text-muted-foreground">{phone}</p>
+            <p className="text-[10px] text-muted-foreground">{phone}</p>
           )}
         </div>
         <button
@@ -97,60 +104,79 @@ function HomePage() {
       </header>
 
       {/* Messages */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-6 space-y-3">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-6 space-y-2.5">
         {messages.length === 0 && (
-          <div className="max-w-md mx-auto text-center pt-12 space-y-8">
-            <div className="inline-flex items-center justify-center size-14 rounded-2xl bg-card border border-border">
-              <Sparkles className="size-6" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-semibold tracking-tight">
-                Ask anything
-              </h2>
-              <p className="text-muted-foreground text-sm mt-2">
-                A quiet, fast assistant. Black & white. No noise.
-              </p>
+          <div className="max-w-md mx-auto pt-10 space-y-7">
+            <div className="text-center space-y-4">
+              <div className="inline-flex items-center justify-center size-14 rounded-2xl bg-card border border-border">
+                <Sparkles className="size-6" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-semibold tracking-tight">
+                  Ask anything
+                </h2>
+                <p className="text-muted-foreground text-sm mt-2">
+                  A quiet, fast assistant. Black & white. No noise.
+                </p>
+              </div>
             </div>
 
-            <div className="text-left bg-card border border-border rounded-2xl p-5 space-y-3">
-              <p className="text-xs uppercase tracking-wider text-muted-foreground">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {SUGGESTIONS.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => sendWith(s)}
+                  className="text-left text-[13px] leading-snug bg-card hover:bg-secondary border border-border rounded-2xl px-3.5 py-3 transition-colors"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+
+            <div className="bg-card border border-border rounded-2xl p-5 space-y-3">
+              <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
                 Coming soon
               </p>
-              <ul className="text-sm space-y-2">
-                <li>• Voice input & spoken replies</li>
-                <li>• Persistent chat history across devices</li>
-                <li>• Image understanding</li>
-                <li>• Custom personas & system prompts</li>
-                <li>• Shareable conversation links</li>
+              <ul className="text-[13px] space-y-1.5 text-foreground/90">
+                <li>· Voice input & spoken replies</li>
+                <li>· Persistent chat history across devices</li>
+                <li>· Image understanding</li>
+                <li>· Custom personas & system prompts</li>
+                <li>· Shareable conversation links</li>
               </ul>
             </div>
           </div>
         )}
 
-        {messages.map((m, i) => (
-          <div
-            key={i}
-            className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
-          >
+        {messages.map((m, i) => {
+          const isUser = m.role === "user";
+          const prev = messages[i - 1];
+          const grouped = prev && prev.role === m.role;
+          return (
             <div
-              className={`max-w-[78%] px-4 py-2.5 rounded-[22px] text-[15px] leading-relaxed whitespace-pre-wrap ${
-                m.role === "user"
-                  ? "bg-bubble-user text-bubble-user-foreground rounded-br-md"
-                  : "bg-bubble-ai text-bubble-ai-foreground rounded-bl-md"
-              }`}
+              key={i}
+              className={`flex ${isUser ? "justify-end" : "justify-start"} ${grouped ? "mt-0.5" : "mt-2.5"}`}
             >
-              {m.content}
+              <div
+                className={`max-w-[80%] px-3.5 py-2 text-[15px] leading-[1.35] whitespace-pre-wrap shadow-sm ${
+                  isUser
+                    ? "bg-bubble-user text-bubble-user-foreground rounded-[20px] rounded-br-[6px]"
+                    : "bg-bubble-ai text-bubble-ai-foreground rounded-[20px] rounded-bl-[6px]"
+                }`}
+              >
+                {m.content}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
 
         {loading && (
-          <div className="flex justify-start">
-            <div className="bg-bubble-ai text-bubble-ai-foreground rounded-[22px] rounded-bl-md px-4 py-3">
+          <div className="flex justify-start mt-2.5">
+            <div className="bg-bubble-ai text-bubble-ai-foreground rounded-[20px] rounded-bl-[6px] px-4 py-3">
               <div className="flex gap-1.5">
-                <span className="size-2 rounded-full bg-muted-foreground animate-bounce [animation-delay:-0.3s]" />
-                <span className="size-2 rounded-full bg-muted-foreground animate-bounce [animation-delay:-0.15s]" />
-                <span className="size-2 rounded-full bg-muted-foreground animate-bounce" />
+                <span className="size-1.5 rounded-full bg-muted-foreground/70 animate-bounce [animation-delay:-0.3s]" />
+                <span className="size-1.5 rounded-full bg-muted-foreground/70 animate-bounce [animation-delay:-0.15s]" />
+                <span className="size-1.5 rounded-full bg-muted-foreground/70 animate-bounce" />
               </div>
             </div>
           </div>

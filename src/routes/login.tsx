@@ -93,7 +93,7 @@ function LoginPage() {
           ) : (
             <>
               <label className="block text-xs uppercase tracking-wider text-muted-foreground">
-                Enter OTP sent to {phone}
+                Enter OTP sent to {displayPhone}
               </label>
               <input
                 type="text"

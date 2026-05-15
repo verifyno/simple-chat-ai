@@ -84,7 +84,7 @@ function LoginPage() {
               />
               <button
                 onClick={onSendOtp}
-                disabled={loading}
+                disabled={loading || normalizedPhone.length < 8}
                 className="w-full bg-primary text-primary-foreground font-medium rounded-xl py-3 disabled:opacity-50 transition-opacity"
               >
                 {loading ? "Sending..." : "Send OTP via WhatsApp"}

@@ -73,14 +73,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "mono — minimal AI chat" },
+      { name: "description", content: "A quiet, fast AI assistant. Black & white. WhatsApp OTP login." },
+      { name: "author", content: "mono" },
+      { property: "og:title", content: "mono — minimal AI chat" },
+      { property: "og:description", content: "A quiet, fast AI assistant." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
       {

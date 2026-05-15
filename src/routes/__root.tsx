@@ -77,9 +77,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "description", content: "A quiet, fast AI assistant. Black & white. WhatsApp OTP login." },
       { name: "author", content: "mono" },
       { property: "og:title", content: "mono — minimal AI chat" },
-      { property: "og:description", content: "A quiet, fast AI assistant." },
+      { property: "og:description", content: "A quiet, fast AI assistant. Black & white. WhatsApp OTP login." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "mono — minimal AI chat" },
+      { name: "twitter:description", content: "A quiet, fast AI assistant. Black & white. WhatsApp OTP login." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/85a70d09-2a1b-474b-b47c-2441e54191c6/id-preview-3c7ab778--13f14bda-37d1-4393-82cb-42cfe8fd6e35.lovable.app-1778839151259.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/85a70d09-2a1b-474b-b47c-2441e54191c6/id-preview-3c7ab778--13f14bda-37d1-4393-82cb-42cfe8fd6e35.lovable.app-1778839151259.png" },
     ],
     links: [
       {

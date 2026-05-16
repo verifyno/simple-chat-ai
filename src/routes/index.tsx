@@ -1,7 +1,7 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowRight, Sparkles, MessageSquare, Lock, Zap } from "lucide-react";
+import { ArrowRight, Sparkles, MessageSquare, Feather, Zap } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: LandingPage,
@@ -9,7 +9,7 @@ export const Route = createFileRoute("/")({
 
 const FEATURES = [
   { icon: MessageSquare, title: "Conversational AI", desc: "Ask anything. Get clean, focused answers." },
-  { icon: Lock, title: "WhatsApp OTP", desc: "Sign in with your number. No passwords, ever." },
+  { icon: Feather, title: "Effortless", desc: "Two taps to start. No clutter, no setup." },
   { icon: Zap, title: "Fast & minimal", desc: "Black & white. iOS-inspired. Zero noise." },
 ];
 
@@ -23,13 +23,21 @@ const SOON = [
 
 function LandingPage() {
   const navigate = useNavigate();
+  const [authed, setAuthed] = useState<boolean | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      // don't auto-redirect — let user choose
-      void data;
+      setAuthed(!!data.session);
     });
-  }, [navigate]);
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
+      setAuthed(!!s);
+    });
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  const go = () => {
+    navigate({ to: authed ? "/chat" : "/login" });
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -41,42 +49,42 @@ function LandingPage() {
           </div>
           <span className="text-base font-semibold tracking-tight">mono</span>
         </div>
-        <Link
-          to="/login"
+        <button
+          onClick={go}
           className="text-[13px] text-muted-foreground hover:text-foreground transition-colors"
         >
-          Sign in
-        </Link>
+          {authed ? "Open chat" : "Sign in"}
+        </button>
       </header>
 
       {/* Hero */}
-      <main className="px-6 pt-16 pb-24 max-w-3xl mx-auto text-center">
+      <main className="px-6 pt-14 pb-20 max-w-3xl mx-auto text-center">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-border bg-card text-[11px] text-muted-foreground mb-7">
           <span className="size-1.5 rounded-full bg-emerald-500" />
-          New · WhatsApp OTP login
+          Minimal AI, just for you
         </div>
         <h1 className="text-[44px] sm:text-6xl font-semibold tracking-tight leading-[1.05]">
           A quieter way<br />to talk to AI.
         </h1>
         <p className="mt-5 text-muted-foreground text-base max-w-md mx-auto">
           mono is a minimal, black & white AI chat — built like an iOS app.
-          Sign in with your phone and start asking.
+          Calm by default. Fast when you need it.
         </p>
 
         <div className="mt-9 flex items-center justify-center gap-3">
-          <Link
-            to="/login"
+          <button
+            onClick={go}
             className="group inline-flex items-center gap-2 bg-primary text-primary-foreground rounded-full pl-6 pr-5 py-3 text-[15px] font-medium hover:opacity-90 transition-opacity"
           >
             Get started
             <ArrowRight className="size-4 group-hover:translate-x-0.5 transition-transform" />
-          </Link>
-          <Link
-            to="/chat"
+          </button>
+          <button
+            onClick={go}
             className="text-[14px] text-muted-foreground hover:text-foreground transition-colors px-3 py-3"
           >
             Try chat →
-          </Link>
+          </button>
         </div>
 
         {/* Mock bubbles */}
@@ -140,7 +148,7 @@ function LandingPage() {
       </section>
 
       <footer className="px-6 pb-10 text-center text-[11px] text-muted-foreground">
-        © {new Date().getFullYear()} mono · built with love
+        © {new Date().getFullYear()} mono
       </footer>
     </div>
   );

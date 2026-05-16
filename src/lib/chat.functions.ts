@@ -17,43 +17,30 @@ export const sendChatMessage = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data }) => {
-    const apiKey = process.env.LOVABLE_API_KEY;
-    if (!apiKey) throw new Error("AI gateway not configured");
+    // The provider endpoint is single-shot Q&A. We send only the most recent
+    // user message as the "question".
+    const lastUser = [...data.messages]
+      .reverse()
+      .find((m) => m.role === "user");
+    if (!lastUser) throw new Error("No user message to send");
 
-    const res = await fetch(
-      "https://ai.gateway.lovable.dev/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash-lite",
-          messages: [
-            {
-              role: "system",
-              content:
-                "You are Mono, a minimalist AI assistant. Reply concisely in clean prose. Use markdown only when essential.",
-            },
-            ...data.messages,
-          ],
-        }),
-      },
-    );
+    const url = `https://apis.davidcyril.name.ng/ai/chat?question=${encodeURIComponent(lastUser.content)}`;
 
-    if (res.status === 429)
-      throw new Error("Rate limit reached. Please wait a moment.");
-    if (res.status === 402)
-      throw new Error("AI credits exhausted. Add credits in workspace settings.");
+    const res = await fetch(url, { method: "GET" });
     if (!res.ok) {
       const t = await res.text();
-      console.error("AI gateway error", res.status, t);
+      console.error("Chat API error", res.status, t);
       throw new Error("AI request failed.");
     }
 
-    const json = await res.json();
-    const reply: string =
-      json?.choices?.[0]?.message?.content ?? "(no response)";
-    return { reply };
+    const json = (await res.json()) as {
+      success?: boolean;
+      data?: { answer?: string };
+    };
+
+    if (!json.success || !json.data?.answer) {
+      throw new Error("AI returned no answer.");
+    }
+
+    return { reply: json.data.answer };
   });

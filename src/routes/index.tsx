@@ -1,213 +1,147 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
-import { sendChatMessage } from "@/lib/chat.functions";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { ArrowUp, LogOut, Sparkles, Plus } from "lucide-react";
-
-const SUGGESTIONS = [
-  "Explain quantum computing simply",
-  "Write a haiku about Mumbai rain",
-  "Plan a 3-day Goa itinerary",
-  "Debug: why is my useEffect looping?",
-];
+import { ArrowRight, Sparkles, MessageSquare, Lock, Zap } from "lucide-react";
 
 export const Route = createFileRoute("/")({
-  component: HomePage,
+  component: LandingPage,
 });
 
-type Msg = { role: "user" | "assistant"; content: string };
+const FEATURES = [
+  { icon: MessageSquare, title: "Conversational AI", desc: "Ask anything. Get clean, focused answers." },
+  { icon: Lock, title: "WhatsApp OTP", desc: "Sign in with your number. No passwords, ever." },
+  { icon: Zap, title: "Fast & minimal", desc: "Black & white. iOS-inspired. Zero noise." },
+];
 
-function HomePage() {
+const SOON = [
+  "Voice input & spoken replies",
+  "Persistent chat history across devices",
+  "Image understanding",
+  "Custom personas & system prompts",
+  "Shareable conversation links",
+];
+
+function LandingPage() {
   const navigate = useNavigate();
-  const chat = useServerFn(sendChatMessage);
-  const [messages, setMessages] = useState<Msg[]>([]);
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [phone, setPhone] = useState<string | null>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
-      if (!session) navigate({ to: "/login" });
-      else setPhone((session.user.user_metadata as any)?.phone ?? null);
-    });
     supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) navigate({ to: "/login" });
-      else setPhone((data.session.user.user_metadata as any)?.phone ?? null);
+      // don't auto-redirect — let user choose
+      void data;
     });
-    return () => sub.subscription.unsubscribe();
   }, [navigate]);
 
-  useEffect(() => {
-    scrollRef.current?.scrollTo({
-      top: scrollRef.current.scrollHeight,
-      behavior: "smooth",
-    });
-  }, [messages, loading]);
-
-  const sendWith = async (text: string) => {
-    if (!text || loading) return;
-    const next: Msg[] = [...messages, { role: "user", content: text }];
-    setMessages(next);
-    setInput("");
-    setLoading(true);
-    try {
-      const { reply } = await chat({ data: { messages: next } });
-      setMessages([...next, { role: "assistant", content: reply }]);
-    } catch (e: any) {
-      toast.error(e?.message || "Chat failed");
-      setMessages(messages);
-      setInput(text);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const send = () => sendWith(input.trim());
-
-  const newChat = () => {
-    if (loading) return;
-    setMessages([]);
-    setInput("");
-  };
-
-  const signOut = async () => {
-    await supabase.auth.signOut();
-  };
-
   return (
-    <div className="flex flex-col h-screen bg-background text-foreground">
-      {/* iOS-style top bar */}
-      <header className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-border/50 backdrop-blur-xl sticky top-0 z-10 bg-background/80">
-        <button
-          onClick={newChat}
-          className="text-muted-foreground hover:text-foreground transition-colors p-2 -ml-2"
-          aria-label="New chat"
-        >
-          <Plus className="size-5" />
-        </button>
-        <div className="text-center">
-          <h1 className="text-[15px] font-semibold tracking-tight">mono</h1>
-          {phone && (
-            <p className="text-[10px] text-muted-foreground">{phone}</p>
-          )}
+    <div className="min-h-screen bg-background text-foreground">
+      {/* Nav */}
+      <header className="flex items-center justify-between px-6 py-5 max-w-5xl mx-auto">
+        <div className="flex items-center gap-2">
+          <div className="size-7 rounded-xl bg-foreground text-background flex items-center justify-center">
+            <Sparkles className="size-3.5" />
+          </div>
+          <span className="text-base font-semibold tracking-tight">mono</span>
         </div>
-        <button
-          onClick={signOut}
-          className="text-muted-foreground hover:text-foreground transition-colors p-2 -mr-2"
-          aria-label="Sign out"
+        <Link
+          to="/login"
+          className="text-[13px] text-muted-foreground hover:text-foreground transition-colors"
         >
-          <LogOut className="size-5" />
-        </button>
+          Sign in
+        </Link>
       </header>
 
-      {/* Messages */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-6 space-y-2.5">
-        {messages.length === 0 && (
-          <div className="max-w-md mx-auto pt-10 space-y-7">
-            <div className="text-center space-y-4">
-              <div className="inline-flex items-center justify-center size-14 rounded-2xl bg-card border border-border">
-                <Sparkles className="size-6" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-semibold tracking-tight">
-                  Ask anything
-                </h2>
-                <p className="text-muted-foreground text-sm mt-2">
-                  A quiet, fast assistant. Black & white. No noise.
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {SUGGESTIONS.map((s) => (
-                <button
-                  key={s}
-                  onClick={() => sendWith(s)}
-                  className="text-left text-[13px] leading-snug bg-card hover:bg-secondary border border-border rounded-2xl px-3.5 py-3 transition-colors"
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-
-            <div className="bg-card border border-border rounded-2xl p-5 space-y-3">
-              <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                Coming soon
-              </p>
-              <ul className="text-[13px] space-y-1.5 text-foreground/90">
-                <li>· Voice input & spoken replies</li>
-                <li>· Persistent chat history across devices</li>
-                <li>· Image understanding</li>
-                <li>· Custom personas & system prompts</li>
-                <li>· Shareable conversation links</li>
-              </ul>
-            </div>
-          </div>
-        )}
-
-        {messages.map((m, i) => {
-          const isUser = m.role === "user";
-          const prev = messages[i - 1];
-          const grouped = prev && prev.role === m.role;
-          return (
-            <div
-              key={i}
-              className={`flex ${isUser ? "justify-end" : "justify-start"} ${grouped ? "mt-0.5" : "mt-2.5"}`}
-            >
-              <div
-                className={`max-w-[80%] px-3.5 py-2 text-[15px] leading-[1.35] whitespace-pre-wrap shadow-sm ${
-                  isUser
-                    ? "bg-bubble-user text-bubble-user-foreground rounded-[20px] rounded-br-[6px]"
-                    : "bg-bubble-ai text-bubble-ai-foreground rounded-[20px] rounded-bl-[6px]"
-                }`}
-              >
-                {m.content}
-              </div>
-            </div>
-          );
-        })}
-
-        {loading && (
-          <div className="flex justify-start mt-2.5">
-            <div className="bg-bubble-ai text-bubble-ai-foreground rounded-[20px] rounded-bl-[6px] px-4 py-3">
-              <div className="flex gap-1.5">
-                <span className="size-1.5 rounded-full bg-muted-foreground/70 animate-bounce [animation-delay:-0.3s]" />
-                <span className="size-1.5 rounded-full bg-muted-foreground/70 animate-bounce [animation-delay:-0.15s]" />
-                <span className="size-1.5 rounded-full bg-muted-foreground/70 animate-bounce" />
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Composer */}
-      <div className="px-4 pb-6 pt-2 border-t border-border/50 bg-background/80 backdrop-blur-xl">
-        <div className="flex items-end gap-2 bg-card border border-border rounded-3xl pl-4 pr-1.5 py-1.5">
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                send();
-              }
-            }}
-            rows={1}
-            placeholder="Message"
-            className="flex-1 bg-transparent resize-none py-2 text-[15px] focus:outline-none placeholder:text-muted-foreground max-h-32"
-          />
-          <button
-            onClick={send}
-            disabled={!input.trim() || loading}
-            className="size-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-30 transition-opacity shrink-0"
-          >
-            <ArrowUp className="size-5" />
-          </button>
+      {/* Hero */}
+      <main className="px-6 pt-16 pb-24 max-w-3xl mx-auto text-center">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-border bg-card text-[11px] text-muted-foreground mb-7">
+          <span className="size-1.5 rounded-full bg-emerald-500" />
+          New · WhatsApp OTP login
         </div>
-      </div>
+        <h1 className="text-[44px] sm:text-6xl font-semibold tracking-tight leading-[1.05]">
+          A quieter way<br />to talk to AI.
+        </h1>
+        <p className="mt-5 text-muted-foreground text-base max-w-md mx-auto">
+          mono is a minimal, black & white AI chat — built like an iOS app.
+          Sign in with your phone and start asking.
+        </p>
+
+        <div className="mt-9 flex items-center justify-center gap-3">
+          <Link
+            to="/login"
+            className="group inline-flex items-center gap-2 bg-primary text-primary-foreground rounded-full pl-6 pr-5 py-3 text-[15px] font-medium hover:opacity-90 transition-opacity"
+          >
+            Get started
+            <ArrowRight className="size-4 group-hover:translate-x-0.5 transition-transform" />
+          </Link>
+          <Link
+            to="/chat"
+            className="text-[14px] text-muted-foreground hover:text-foreground transition-colors px-3 py-3"
+          >
+            Try chat →
+          </Link>
+        </div>
+
+        {/* Mock bubbles */}
+        <div className="mt-16 mx-auto max-w-md text-left space-y-2">
+          <div className="flex justify-start">
+            <div className="bg-bubble-ai text-bubble-ai-foreground rounded-[20px] rounded-bl-[6px] px-3.5 py-2 text-[14px]">
+              Hi! I'm mono. What's on your mind?
+            </div>
+          </div>
+          <div className="flex justify-end">
+            <div className="bg-bubble-user text-bubble-user-foreground rounded-[20px] rounded-br-[6px] px-3.5 py-2 text-[14px]">
+              Plan a weekend trip to Goa
+            </div>
+          </div>
+          <div className="flex justify-start">
+            <div className="bg-bubble-ai text-bubble-ai-foreground rounded-[20px] rounded-bl-[6px] px-3.5 py-2 text-[14px]">
+              Day 1: Baga beach + sunset at Anjuna. Day 2: Old Goa churches…
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {/* Features */}
+      <section className="px-6 pb-20 max-w-4xl mx-auto">
+        <div className="grid sm:grid-cols-3 gap-3">
+          {FEATURES.map((f) => (
+            <div
+              key={f.title}
+              className="bg-card border border-border rounded-2xl p-5"
+            >
+              <div className="size-9 rounded-xl bg-secondary flex items-center justify-center mb-3">
+                <f.icon className="size-4" />
+              </div>
+              <h3 className="text-[14px] font-semibold">{f.title}</h3>
+              <p className="text-[12.5px] text-muted-foreground mt-1 leading-snug">
+                {f.desc}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Coming soon */}
+      <section className="px-6 pb-24 max-w-3xl mx-auto">
+        <div className="bg-card border border-border rounded-3xl p-7">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+            What's next
+          </p>
+          <h2 className="text-2xl font-semibold tracking-tight mt-2">
+            Features & updates coming soon
+          </h2>
+          <ul className="mt-5 grid sm:grid-cols-2 gap-y-2 gap-x-6 text-[13.5px] text-foreground/90">
+            {SOON.map((s) => (
+              <li key={s} className="flex items-start gap-2">
+                <span className="mt-1.5 size-1 rounded-full bg-muted-foreground shrink-0" />
+                {s}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <footer className="px-6 pb-10 text-center text-[11px] text-muted-foreground">
+        © {new Date().getFullYear()} mono · built with love
+      </footer>
     </div>
   );
 }

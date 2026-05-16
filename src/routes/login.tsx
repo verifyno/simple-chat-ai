@@ -137,13 +137,14 @@ function LoginPage() {
                         if (v.length === 6 && !loading) onVerify(v);
                       }}
                       disabled={loading}
+                      containerClassName="gap-2"
                     >
                       <InputOTPGroup className="gap-2">
                         {[0, 1, 2, 3, 4, 5].map((i) => (
                           <InputOTPSlot
                             key={i}
                             index={i}
-                            className="size-11 rounded-xl border border-border bg-input text-lg font-semibold first:rounded-l-xl last:rounded-r-xl"
+                            className="size-11 !rounded-xl !border !border-border bg-input text-lg font-semibold shadow-none transition-colors"
                           />
                         ))}
                       </InputOTPGroup>

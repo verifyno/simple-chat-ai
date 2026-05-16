@@ -13,7 +13,7 @@ const SUGGESTIONS = [
   "Debug: why is my useEffect looping?",
 ];
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/chat")({
   component: HomePage,
 });
 
